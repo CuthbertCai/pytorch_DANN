@@ -20,10 +20,11 @@ python preprocess.py
 > You can run `main.py` to implements the MNSIT experiments for the paper with the  
 > similar model and same paramenters.The paper's results and this work's results a-  
 > re as follows:  
+
 |Method     | Target Acc(paper) | Target Acc(this work)|
-|:----------|:-----------------:|---------------------:|
+|:----------:|:-----------------:|:---------------------:|
 |Source Only| 0.5225            | 0.5189|
-|DANN       | 0.7666            | 0.7204|
+|DANN       | 0.7666            | 0.7204|``````
 
 
 
