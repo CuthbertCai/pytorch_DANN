@@ -22,6 +22,11 @@ feature_extractor = models.Extractor()
 class_classifier = models.Class_classifier()
 domain_classifier = models.Domain_classifier()
 
+if params.use_gpu:
+    feature_extractor.cuda()
+    class_classifier.cuda()
+    domain_classifier.cuda()
+
 # init criterions
 class_criterion = nn.NLLLoss()
 domain_criterion = nn.NLLLoss()

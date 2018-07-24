@@ -42,8 +42,9 @@ def train(feature_extractor, class_classifier, domain_classifier, class_criterio
         if params.use_gpu:
             input1, label1 = Variable(input1.cuda()), Variable(label1.cuda())
             input2, label2 = Variable(input2.cuda()), Variable(label2.cuda())
-        input1, label1 = Variable(input1), Variable(label1)
-        input2, label2 = Variable(input2), Variable(label2)
+        else:
+            input1, label1 = Variable(input1), Variable(label1)
+            input2, label2 = Variable(input2), Variable(label2)
 
         # setup optimizer
         optimizer = utils.optimizer_scheduler(optimizer, p)
