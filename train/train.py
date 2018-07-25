@@ -48,8 +48,9 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             if params.use_gpu:
                 input1, label1 = Variable(input1.cuda()), Variable(label1.cuda())
                 input2, label2 = Variable(input2.cuda()), Variable(label2.cuda())
-            input1, label1 = Variable(input1), Variable(label1)
-            input2, label2 = Variable(input2), Variable(label2)
+            else:
+                input1, label1 = Variable(input1), Variable(label1)
+                input2, label2 = Variable(input2), Variable(label2)
 
             # setup optimizer
             optimizer = utils.optimizer_scheduler(optimizer, p)
@@ -99,7 +100,8 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
 
             if params.use_gpu:
                 input1, label1 = Variable(input1.cuda()), Variable(label1.cuda())
-            input1, label1 = Variable(input1), Variable(label1)
+            else:
+                input1, label1 = Variable(input1), Variable(label1)
 
             # setup optimizer
             optimizer = optim.SGD(list(feature_extractor.parameters())+list(class_classifier.parameters()), lr=0.01, momentum=0.9)
@@ -128,7 +130,8 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             input2, label2 = input2[0:size, :, :, :], label2[0:size]
             if params.use_gpu:
                 input2, label2 = Variable(input2.cuda()), Variable(label2.cuda())
-            input2, label2 = Variable(input2), Variable(label2)
+            else:
+                input2, label2 = Variable(input2), Variable(label2)
 
             # setup optimizer
             optimizer = optim.SGD(list(feature_extractor.parameters()) + list(class_classifier.parameters()), lr=0.01,
