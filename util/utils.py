@@ -55,7 +55,7 @@ def get_test_loader(dataset):
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
-            transforms.RandomCrop((28)),
+            transforms.CenterCrop((28)),
             transforms.ToTensor(),
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
