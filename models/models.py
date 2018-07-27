@@ -54,7 +54,7 @@ class Class_classifier(nn.Module):
         logits = F.relu(self.bn2(logits))
         logits = self.fc3(logits)
 
-        return F.log_softmax(logits)
+        return F.log_softmax(logits, 1)
 
 class Domain_classifier(nn.Module):
 
@@ -67,6 +67,6 @@ class Domain_classifier(nn.Module):
     def forward(self, input, constant):
         input = GradReverse.grad_reverse(input, constant)
         logits = F.relu(self.bn1(self.fc1(input)))
-        logits = F.log_softmax(self.fc2(logits))
+        logits = F.log_softmax(self.fc2(logits), 1)
 
         return logits

@@ -61,7 +61,7 @@ def parse_arguments(argv):
     """Command line parse."""
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--plot', type=bool, default=True, help='plot figures.')
+    parser.add_argument('--plot', type=bool, default=False, help='plot figures.')
     parser.add_argument('--training_mode', type=str, default='dann', help='which mode to train the model.')
 
 
