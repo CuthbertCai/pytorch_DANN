@@ -7,11 +7,55 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import torch.nn as nn
 import torch.optim as optim
 
+import numpy as np
+
 from models import models
 from train import test, train, params
 from util import utils
+from sklearn.manifold import TSNE
 
 import argparse, sys
+
+import torch
+from torch.autograd import Variable
+
+
+def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader):
+    """
+    Evaluate the performance of dann and source only by visualization.
+
+    :param feature_extractor: network used to extract feature from target samples
+    :param class_classifier: network used to predict labels
+    :param domain_classifier: network used to predict domain
+    :param source_dataloader: test dataloader of source domain
+    :param target_dataloader: test dataloader of target domain
+    :return:
+    """
+    # Setup the network
+    feature_extractor.eval()
+    class_classifier.eval()
+    domain_classifier.eval()
+
+    # Randomly select samples from source domain and target domain.
+    dataiter = iter(src_test_dataloader)
+    s_images, s_labels = dataiter.next()
+    s_tags = Variable(torch.zeros((s_labels.size()[0])).type(torch.LongTensor))
+
+    dataiter = iter(tgt_test_dataloader)
+    t_images, t_labels = dataiter.next()
+    t_tags = Variable(torch.ones((t_labels.size()[0])).type(torch.LongTensor))
+
+
+    # Compute the embedding of target domain.
+    embedding1 = feature_extractor(s_images)
+    embedding2 = feature_extractor(t_images)
+
+    tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=3000)
+    dann_tsne = tsne.fit_transform(np.concatenate((embedding1.detach().numpy(), embedding1.detach().numpy())))
+
+    # utils.plot_embedding(source_only_tsne, combined_test_labels.argmax(1), combined_test_domain.argmax(1), 'Source only')
+    utils.plot_embedding(dann_tsne, np.concatenate((s_labels.numpy(), t_labels.numpy())),
+                         np.concatenate((s_tags.numpy(), t_tags.numpy())), 'Domain Adaptation')
 
 
 
@@ -55,13 +99,18 @@ def main(args):
                     src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
         test.test(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader)
 
+    if args.plot:
+        visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
+                             tgt_test_dataloader)
+
 
 
 def parse_arguments(argv):
     """Command line parse."""
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--plot', type=bool, default=False, help='plot figures.')
+    parser.add_argument('--plot', type=bool, default=True, help='plot figures.')
+
     parser.add_argument('--training_mode', type=str, default='dann', help='which mode to train the model.')
 
 
