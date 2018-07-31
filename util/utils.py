@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 from train import params
+from sklearn.manifold import TSNE
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -55,6 +56,7 @@ def get_test_loader(dataset):
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
+            # transforms.RandomCrop((28)),
             transforms.CenterCrop((28)),
             transforms.ToTensor(),
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
@@ -102,5 +104,36 @@ def displayImages(dataloader, length=8):
     plt.imshow(images)
     # print labels
     print(' '.join('%5s' % labels[j].item() for j in range(length)))
+
+    plt.show()
+
+
+def plot_embedding(X, y, d, title=None):
+    """
+    Plot an embedding X with the class label y colored by the domain d.
+
+    :param X: embedding
+    :param y: label
+    :param d: domain
+    :param title: title on the figure
+    :return:
+    """
+
+    x_min, x_max = np.min(X, 0), np.max(X, 0)
+    X = (X - x_min) / (x_max - x_min)
+
+    # Plot colors numbers
+    plt.figure(figsize=(10,10))
+    ax = plt.subplot(111)
+
+    for i in range(X.shape[0]):
+        # plot colored number
+        plt.text(X[i, 0], X[i, 1], str(y[i]),
+                 color=plt.cm.bwr(d[i]/1.),
+                 fontdict={'weight': 'bold', 'size': 9})
+
+    plt.xticks([]), plt.yticks([])
+    if title is not None:
+        plt.title(title)
 
     plt.show()
