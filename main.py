@@ -39,19 +39,34 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
     # Randomly select samples from source domain and target domain.
     dataiter = iter(src_test_dataloader)
     s_images, s_labels = dataiter.next()
-    s_tags = Variable(torch.zeros((s_labels.size()[0])).type(torch.LongTensor))
+    if params.use_gpu:
+        s_images, s_labels = Variable(s_images.cuda()), Variable(s_labels.cuda())
+        s_tags = Variable(torch.zeros((s_labels.size()[0])).type(torch.LongTensor).cuda())
+    else:
+        s_images, s_labels = Variable(s_images), Variable(s_labels)
+        s_tags = Variable(torch.zeros((s_labels.size()[0])).type(torch.LongTensor))
 
     dataiter = iter(tgt_test_dataloader)
     t_images, t_labels = dataiter.next()
-    t_tags = Variable(torch.ones((t_labels.size()[0])).type(torch.LongTensor))
-
+    if params.use_gpu:
+        t_images, t_labels = Variable(t_images.cuda()), Variable(t_labels.cuda())
+        t_tags = Variable(torch.ones((t_labels.size()[0])).type(torch.LongTensor).cuda())
+    else:
+        t_images, t_labels = Variable(t_images), Variable(t_labels)
+        t_tags = Variable(torch.ones((t_labels.size()[0])).type(torch.LongTensor))
 
     # Compute the embedding of target domain.
     embedding1 = feature_extractor(s_images)
     embedding2 = feature_extractor(t_images)
 
     tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=3000)
-    dann_tsne = tsne.fit_transform(np.concatenate((embedding1.detach().numpy(), embedding1.detach().numpy())))
+
+    if params.use_gpu:
+        dann_tsne = tsne.fit_transform(np.concatenate((embedding1.cpu().detach().numpy(),
+                                                       embedding2.cpu().detach().numpy())))
+    else:
+        dann_tsne = tsne.fit_transform(np.concatenate((embedding1.detach().numpy(),
+                                                   embedding2.detach().numpy())))
 
     # utils.plot_embedding(source_only_tsne, combined_test_labels.argmax(1), combined_test_domain.argmax(1), 'Source only')
     utils.plot_embedding(dann_tsne, np.concatenate((s_labels.numpy(), t_labels.numpy())),
