@@ -7,6 +7,9 @@ from sklearn.manifold import TSNE
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os, time
+
+
 
 def get_train_loader(dataset):
     """
@@ -18,7 +21,7 @@ def get_train_loader(dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
-
+        print(os.path.abspath(params.source_path))
         data = datasets.MNIST(root= params.source_path, train= True, transform= transform,
                               download= True)
 
@@ -38,6 +41,8 @@ def get_train_loader(dataset):
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
     return dataloader
+
+
 
 def get_test_loader(dataset):
     """
@@ -70,6 +75,8 @@ def get_test_loader(dataset):
 
     return dataloader
 
+
+
 def optimizer_scheduler(optimizer, p):
     """
     Adjust the learning rate of optimizer
@@ -83,11 +90,14 @@ def optimizer_scheduler(optimizer, p):
     return optimizer
 
 
-def displayImages(dataloader, length=8):
+
+def displayImages(dataloader, length=8, folder=None, imgName=None):
     """
-    Randomly sample some images and display.
+    Randomly sample some images and display
     :param dataloader: maybe trainloader or testloader
-    :param length: number of images to be displayed.
+    :param length: number of images to be displayed
+    :param folder: the path to save the image
+    :param imgName: the name of saving image
     :return:
     """
     # randomly sample some images.
@@ -101,14 +111,33 @@ def displayImages(dataloader, length=8):
     images = images/2 + 0.5
     images = np.transpose(images, (1, 2, 0))
 
-    plt.imshow(images)
+
+    if folder is None:
+        # Directly display if no folder provided.
+        plt.imshow(images)
+        plt.show()
+
+    else:
+        # Check if folder exist, otherwise need to create it.
+        folder = os.path.abspath(folder)
+
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        if imgName is None:
+            imgName = 'displayImages' + str(int(time.time()))
+        imgName = os.path.join(folder, imgName + '.jpg')
+
+
+        plt.imsave(imgName, images)
+        plt.close()
+
     # print labels
     print(' '.join('%5s' % labels[j].item() for j in range(length)))
 
-    plt.show()
 
 
-def plot_embedding(X, y, d, title=None):
+def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
     """
     Plot an embedding X with the class label y colored by the domain d.
 
@@ -116,6 +145,8 @@ def plot_embedding(X, y, d, title=None):
     :param y: label
     :param d: domain
     :param title: title on the figure
+    :param folder: the path to save the image
+    :param imgName: the name of saving image
     :return:
     """
 
@@ -136,4 +167,20 @@ def plot_embedding(X, y, d, title=None):
     if title is not None:
         plt.title(title)
 
-    plt.show()
+    if folder is None:
+        # Directly display if no folder provided.
+        plt.show()
+
+    else:
+        # Check if folder exist, otherwise need to create it.
+        folder = os.path.abspath(folder)
+
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        if imgName is None:
+            imgName = 'plot_embedding' + str(int(time.time()))
+        imgName = os.path.join(folder, imgName + '.jpg')
+
+        plt.savefig(imgName)
+        plt.close()
