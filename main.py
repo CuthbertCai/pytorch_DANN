@@ -14,13 +14,17 @@ from train import test, train, params
 from util import utils
 from sklearn.manifold import TSNE
 
-import argparse, sys
+import argparse, sys, os
 
 import torch
 from torch.autograd import Variable
 
+import time
 
-def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader):
+
+
+def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader,
+                         folder):
     """
     Evaluate the performance of dann and source only by visualization.
 
@@ -29,6 +33,7 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
     :param domain_classifier: network used to predict domain
     :param source_dataloader: test dataloader of source domain
     :param target_dataloader: test dataloader of target domain
+    :param folder: the path to save the images
     :return:
     """
     # Setup the network
@@ -70,11 +75,13 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
 
     # utils.plot_embedding(source_only_tsne, combined_test_labels.argmax(1), combined_test_domain.argmax(1), 'Source only')
     utils.plot_embedding(dann_tsne, np.concatenate((s_labels, t_labels)),
-                         np.concatenate((s_tags, t_tags)), 'Domain Adaptation')
+                         np.concatenate((s_tags, t_tags)), 'Domain Adaptation', folder=folder, imgName='embeddings')
+
 
 
 
 def main(args):
+  
     # prepare the source data and target data
 
     src_train_dataloader = utils.get_train_loader('MNIST')
@@ -84,10 +91,11 @@ def main(args):
 
     if args.plot:
         print('Images from training on source domain:')
-        utils.displayImages(src_train_dataloader)
+        utils.displayImages(src_train_dataloader, folder=args.save_dir, imgName='source')
 
         print('Images from test on target domain:')
-        utils.displayImages(tgt_test_dataloader)
+        utils.displayImages(tgt_test_dataloader, folder=args.save_dir, imgName='target')
+
 
     # init models
     feature_extractor = models.Extractor()
@@ -116,7 +124,8 @@ def main(args):
 
     if args.plot:
         visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
-                             tgt_test_dataloader)
+                             tgt_test_dataloader, args.save_dir)
+
 
 
 
@@ -125,6 +134,8 @@ def parse_arguments(argv):
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--plot', type=bool, default=True, help='plot figures.')
+
+    parser.add_argument('--save_dir', type=str, default=None, help='path to save plotted images.')
 
     parser.add_argument('--training_mode', type=str, default='dann', help='which mode to train the model.')
 
