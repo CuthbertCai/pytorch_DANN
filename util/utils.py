@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os, time
 
-
-
 def get_train_loader(dataset):
     """
     Get train dataloader of source domain or target domain
@@ -22,6 +20,7 @@ def get_train_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
         print(os.path.abspath(params.source_path))
+
         data = datasets.MNIST(root= params.source_path, train= True, transform= transform,
                               download= True)
 
@@ -41,8 +40,6 @@ def get_train_loader(dataset):
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
     return dataloader
-
-
 
 def get_test_loader(dataset):
     """
@@ -75,8 +72,6 @@ def get_test_loader(dataset):
 
     return dataloader
 
-
-
 def optimizer_scheduler(optimizer, p):
     """
     Adjust the learning rate of optimizer
@@ -88,8 +83,6 @@ def optimizer_scheduler(optimizer, p):
         param_group['lr'] = 0.01 / (1. + 10 * p) ** 0.75
 
     return optimizer
-
-
 
 def displayImages(dataloader, length=8, folder=None, imgName=None):
     """
@@ -110,7 +103,6 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
     images = torchvision.utils.make_grid(images).numpy()
     images = images/2 + 0.5
     images = np.transpose(images, (1, 2, 0))
-
 
     if folder is None:
         # Directly display if no folder provided.

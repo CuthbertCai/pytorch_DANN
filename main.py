@@ -79,9 +79,11 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
 
 
 
-def main(args):
 
+def main(args):
+  
     # prepare the source data and target data
+
     src_train_dataloader = utils.get_train_loader('MNIST')
     src_test_dataloader = utils.get_test_loader('MNIST')
     tgt_train_dataloader = utils.get_train_loader('MNIST_M')
@@ -93,6 +95,7 @@ def main(args):
 
         print('Images from test on target domain:')
         utils.displayImages(tgt_test_dataloader, folder=args.save_dir, imgName='target')
+
 
     # init models
     feature_extractor = models.Extractor()
@@ -125,6 +128,7 @@ def main(args):
 
 
 
+
 def parse_arguments(argv):
     """Command line parse."""
     parser = argparse.ArgumentParser()
@@ -132,7 +136,6 @@ def parse_arguments(argv):
     parser.add_argument('--plot', type=bool, default=True, help='plot figures.')
 
     parser.add_argument('--save_dir', type=str, default=None, help='path to save plotted images.')
-
 
     parser.add_argument('--training_mode', type=str, default='dann', help='which mode to train the model.')
 
