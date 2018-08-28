@@ -25,6 +25,8 @@ def get_train_loader(dataset):
                               download= True)
 
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
+
+
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             transforms.RandomCrop((28)),
@@ -93,6 +95,9 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
     :param imgName: the name of saving image
     :return:
     """
+    if params.fig_mode is None:
+        return
+
     # randomly sample some images.
     dataiter = iter(dataloader)
     images, labels = dataiter.next()
@@ -104,12 +109,16 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
     images = images/2 + 0.5
     images = np.transpose(images, (1, 2, 0))
 
-    if folder is None:
-        # Directly display if no folder provided.
+
+
+    if params.fig_mode == 'display':
+
         plt.imshow(images)
         plt.show()
 
-    else:
+    if params.fig_mode == 'save':
+        assert folder is not None, 'Save mode is chosen for figure mode, you have to set folder path.'
+
         # Check if folder exist, otherwise need to create it.
         folder = os.path.abspath(folder)
 
@@ -141,6 +150,9 @@ def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
     :param imgName: the name of saving image
     :return:
     """
+    if params.fig_mode is None:
+        return
+
 
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
@@ -159,11 +171,15 @@ def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
     if title is not None:
         plt.title(title)
 
-    if folder is None:
+    if params.fig_mode == 'display':
+        assert folder is not None, 'Save mode is chosen for figure mode, you have to set folder path.'
         # Directly display if no folder provided.
         plt.show()
 
-    else:
+
+    if params.fig_mode == 'save':
+        assert folder is not None, 'Save mode is chosen for figure mode, you have to set folder path.'
+
         # Check if folder exist, otherwise need to create it.
         folder = os.path.abspath(folder)
 

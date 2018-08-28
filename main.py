@@ -24,7 +24,7 @@ import time
 
 
 def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader,
-                         folder):
+                         folder, num_of_samples=None):
     """
     Evaluate the performance of dann and source only by visualization.
 
@@ -34,6 +34,7 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
     :param source_dataloader: test dataloader of source domain
     :param target_dataloader: test dataloader of target domain
     :param folder: the path to save the images
+    :param num_of_samples: the number of samples (from train and test respectively) for t-sne
     :return:
     """
     # Setup the network
@@ -42,23 +43,50 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
     domain_classifier.eval()
 
     # Randomly select samples from source domain and target domain.
-    dataiter = iter(src_test_dataloader)
-    s_images, s_labels = dataiter.next()
-    if params.use_gpu:
-        s_images = Variable(s_images.cuda())
+    if num_of_samples is None:
+        num_of_samples = params.batch_size
     else:
-        s_images = Variable(s_images)
+        assert len(src_test_dataloader) * num_of_samples, \
+            'The number of samples can not bigger than dataset.' # NOT PRECISELY COMPUTATION
 
-    s_tags = Variable(torch.zeros((s_labels.size()[0])).type(torch.LongTensor))
+    # Collect source data.
+    s_images, s_labels, s_tags = [], [], []
+    for batch in src_test_dataloader:
+        images, labels = batch
 
-    dataiter = iter(tgt_test_dataloader)
-    t_images, t_labels = dataiter.next()
-    if params.use_gpu:
-        t_images = Variable(t_images.cuda())
-    else:
-        t_images, t_labels = Variable(t_images), Variable(t_labels)
+        if params.use_gpu:
+            s_images.append(images.cuda())
+        else:
+            s_images.append(images)
+        s_labels.append(labels)
 
-    t_tags = Variable(torch.ones((t_labels.size()[0])).type(torch.LongTensor))
+        s_tags.append(torch.zeros((labels.size()[0])).type(torch.LongTensor))
+
+        if len(s_images * params.batch_size) > num_of_samples:
+            break
+
+    s_images, s_labels, s_tags = torch.cat(s_images)[:num_of_samples], \
+                                 torch.cat(s_labels)[:num_of_samples], torch.cat(s_tags)[:num_of_samples]
+
+
+    # Collect test data.
+    t_images, t_labels, t_tags = [], [], []
+    for batch in tgt_test_dataloader:
+        images, labels = batch
+
+        if params.use_gpu:
+            t_images.append(images.cuda())
+        else:
+            t_images.append(images)
+        t_labels.append(labels)
+
+        t_tags.append(torch.ones((labels.size()[0])).type(torch.LongTensor))
+
+        if len(t_images * params.batch_size) > num_of_samples:
+            break
+
+    t_images, t_labels, t_tags = torch.cat(t_images)[:num_of_samples], \
+                                 torch.cat(t_labels)[:num_of_samples], torch.cat(t_tags)[:num_of_samples]
 
     # Compute the embedding of target domain.
     embedding1 = feature_extractor(s_images)
@@ -81,7 +109,10 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
 
 
 def main(args):
-  
+    # Set global parameters.
+    params.fig_mode = args.fig_mode
+    
+
     # prepare the source data and target data
 
     src_train_dataloader = utils.get_train_loader('MNIST')
@@ -89,7 +120,7 @@ def main(args):
     tgt_train_dataloader = utils.get_train_loader('MNIST_M')
     tgt_test_dataloader = utils.get_test_loader('MNIST_M')
 
-    if args.plot:
+    if params.fig_mode is not None:
         print('Images from training on source domain:')
         utils.displayImages(src_train_dataloader, folder=args.save_dir, imgName='source')
 
@@ -122,7 +153,7 @@ def main(args):
                     src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
         test.test(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader)
 
-    if args.plot:
+    if params.fig_mode:
         visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
                              tgt_test_dataloader, args.save_dir)
 
@@ -133,15 +164,14 @@ def parse_arguments(argv):
     """Command line parse."""
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--plot', type=bool, default=True, help='plot figures.')
+    parser.add_argument('--fig_mode', type=str, default=None, help='Plot experiment figures.')
 
     parser.add_argument('--save_dir', type=str, default=None, help='path to save plotted images.')
 
+
     parser.add_argument('--training_mode', type=str, default='dann', help='which mode to train the model.')
 
-
     return parser.parse_args()
-
 
 
 if __name__ == '__main__':
