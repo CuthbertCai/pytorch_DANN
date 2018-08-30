@@ -5,9 +5,13 @@ from torchvision import datasets, transforms
 from train import params
 from sklearn.manifold import TSNE
 
+
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+
 import numpy as np
 import os, time
+
 
 def get_train_loader(dataset):
     """
@@ -43,6 +47,8 @@ def get_train_loader(dataset):
 
     return dataloader
 
+
+
 def get_test_loader(dataset):
     """
     Get test dataloader of source domain or target domain
@@ -74,6 +80,8 @@ def get_test_loader(dataset):
 
     return dataloader
 
+
+
 def optimizer_scheduler(optimizer, p):
     """
     Adjust the learning rate of optimizer
@@ -86,12 +94,13 @@ def optimizer_scheduler(optimizer, p):
 
     return optimizer
 
-def displayImages(dataloader, length=8, folder=None, imgName=None):
+
+
+def displayImages(dataloader, length=8, imgName=None):
     """
     Randomly sample some images and display
     :param dataloader: maybe trainloader or testloader
     :param length: number of images to be displayed
-    :param folder: the path to save the image
     :param imgName: the name of saving image
     :return:
     """
@@ -117,17 +126,18 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
         plt.show()
 
     if params.fig_mode == 'save':
-        assert folder is not None, 'Save mode is chosen for figure mode, you have to set folder path.'
-
         # Check if folder exist, otherwise need to create it.
-        folder = os.path.abspath(folder)
+        folder = os.path.abspath(params.save_dir)
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
         if imgName is None:
             imgName = 'displayImages' + str(int(time.time()))
-        imgName = os.path.join(folder, imgName + '.jpg')
+
+        # Check extension in case.
+        if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
+            imgName = os.path.join(folder, imgName + '.jpg')
 
 
         plt.imsave(imgName, images)
@@ -138,7 +148,7 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
 
 
 
-def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
+def plot_embedding(X, y, d, title=None, imgName=None):
     """
     Plot an embedding X with the class label y colored by the domain d.
 
@@ -146,8 +156,8 @@ def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
     :param y: label
     :param d: domain
     :param title: title on the figure
-    :param folder: the path to save the image
     :param imgName: the name of saving image
+
     :return:
     """
     if params.fig_mode is None:
@@ -168,27 +178,31 @@ def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
                  fontdict={'weight': 'bold', 'size': 9})
 
     plt.xticks([]), plt.yticks([])
+
+    # If title is not given, we assign training_mode to the title.
     if title is not None:
         plt.title(title)
+    else:
+        plt.title(params.training_mode)
 
     if params.fig_mode == 'display':
-        assert folder is not None, 'Save mode is chosen for figure mode, you have to set folder path.'
         # Directly display if no folder provided.
         plt.show()
 
 
     if params.fig_mode == 'save':
-        assert folder is not None, 'Save mode is chosen for figure mode, you have to set folder path.'
-
         # Check if folder exist, otherwise need to create it.
-        folder = os.path.abspath(folder)
+        folder = os.path.abspath(params.save_dir)
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
         if imgName is None:
             imgName = 'plot_embedding' + str(int(time.time()))
-        imgName = os.path.join(folder, imgName + '.jpg')
+
+        # Check extension in case.
+        if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
+            imgName = os.path.join(folder, imgName + '.jpg')
 
         plt.savefig(imgName)
         plt.close()

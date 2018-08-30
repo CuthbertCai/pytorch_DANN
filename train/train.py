@@ -23,6 +23,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
     :param optimizer:
     :return:
     """
+
     # setup models
     feature_extractor.train()
     class_classifier.train()
