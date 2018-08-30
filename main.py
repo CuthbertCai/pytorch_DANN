@@ -24,7 +24,7 @@ import time
 
 
 def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader,
-                         folder, num_of_samples=None):
+                         num_of_samples=None, imgName=None):
     """
     Evaluate the performance of dann and source only by visualization.
 
@@ -33,10 +33,12 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
     :param domain_classifier: network used to predict domain
     :param source_dataloader: test dataloader of source domain
     :param target_dataloader: test dataloader of target domain
-    :param folder: the path to save the images
     :param num_of_samples: the number of samples (from train and test respectively) for t-sne
+    :param imgName: the name of saving image
+
     :return:
     """
+
     # Setup the network
     feature_extractor.eval()
     class_classifier.eval()
@@ -101,9 +103,9 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
         dann_tsne = tsne.fit_transform(np.concatenate((embedding1.detach().numpy(),
                                                    embedding2.detach().numpy())))
 
-    # utils.plot_embedding(source_only_tsne, combined_test_labels.argmax(1), combined_test_domain.argmax(1), 'Source only')
+
     utils.plot_embedding(dann_tsne, np.concatenate((s_labels, t_labels)),
-                         np.concatenate((s_tags, t_tags)), 'Domain Adaptation', folder=folder, imgName='embeddings')
+                         np.concatenate((s_tags, t_tags)), 'Domain Adaptation', imgName)
 
 
 
@@ -111,7 +113,14 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
 def main(args):
     # Set global parameters.
     params.fig_mode = args.fig_mode
-    
+    params.epochs = args.max_epoch
+    params.training_mode = args.training_mode
+
+
+    if args.save_dir is not None:
+        params.save_dir = args.save_dir
+    else:
+        print('Figures will be saved in ./experiment folder.')
 
     # prepare the source data and target data
 
@@ -122,10 +131,10 @@ def main(args):
 
     if params.fig_mode is not None:
         print('Images from training on source domain:')
-        utils.displayImages(src_train_dataloader, folder=args.save_dir, imgName='source')
+        utils.displayImages(src_train_dataloader, imgName='source')
 
         print('Images from test on target domain:')
-        utils.displayImages(tgt_test_dataloader, folder=args.save_dir, imgName='target')
+        utils.displayImages(tgt_test_dataloader, imgName='target')
 
 
     # init models
@@ -153,10 +162,10 @@ def main(args):
                     src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
         test.test(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader)
 
-    if params.fig_mode:
-        visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
-                             tgt_test_dataloader, args.save_dir)
-
+        # Plot embeddings periodically.
+        if epoch % params.embed_plot_epoch == 0 and args.fig_mode:
+            visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
+                                 tgt_test_dataloader, imgName='embedding_' + str(epoch))
 
 
 
@@ -166,10 +175,11 @@ def parse_arguments(argv):
 
     parser.add_argument('--fig_mode', type=str, default=None, help='Plot experiment figures.')
 
-    parser.add_argument('--save_dir', type=str, default=None, help='path to save plotted images.')
+    parser.add_argument('--save_dir', type=str, default=None, help='Path to save plotted images.')
 
+    parser.add_argument('--training_mode', type=str, default='dann', help='Choose a mode to train the model.')
 
-    parser.add_argument('--training_mode', type=str, default='dann', help='which mode to train the model.')
+    parser.add_argument('--max_epoch', type=int, default=100, help='The max number of epochs.')
 
     return parser.parse_args()
 
