@@ -33,6 +33,8 @@ python preprocess.py
 > Experiment on SVHN->MNIST is added in this project, but some bugs are not fixed.  
 > The accuracies of source and target domains are not good at the same time.
 
+> Experiment on SynDig->SVHN is added.
+
 
 
 [1]:https://arxiv.org/pdf/1505.07818.pdf
