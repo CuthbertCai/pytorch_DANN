@@ -12,6 +12,7 @@ plt.switch_backend('agg')
 
 import numpy as np
 import os, time
+from data import SynDig
 
 
 def get_train_loader(dataset):
@@ -55,6 +56,17 @@ def get_train_loader(dataset):
         data = torch.utils.data.ConcatDataset((data1, data2))
 
         dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+    elif dataset == 'SynDig':
+        transform = transforms.Compose([
+            transforms.RandomCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
+        ])
+
+        data = SynDig.SynDig(root= params.syndig_path, split= 'train', transform= transform, download= False)
+
+        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+
 
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
@@ -99,6 +111,16 @@ def get_test_loader(dataset):
         data = datasets.SVHN(root= params.svhn_path, split= 'test', transform = transform, download= True)
 
         dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+    elif dataset == 'SynDig':
+        transform = transforms.Compose([
+            transforms.CenterCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
+        data = SynDig.SynDig(root= params.syndig_path, split= 'test', transform= transform, download= False)
+
+        dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
