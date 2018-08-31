@@ -7,7 +7,7 @@
 > version, you can see [tf-dann][2].
 
 ### requirements
->　python3.6.2  
+> python3.6.2  
 > `pip install -r requirements.txt`
 
 ### Data
@@ -29,6 +29,9 @@ python preprocess.py
 |:----------:|:-----------------:|:---------------------:|
 |Source Only| 0.5225            | 0.5189|
 |DANN       | 0.7666            | 0.7600|``````
+
+> Experiment on SVHN->MNIST is added in this project, but some bugs are not fixed.  
+> The accuracies of source and target domains are not good at the same time.
 
 
 

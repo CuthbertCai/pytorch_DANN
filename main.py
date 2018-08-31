@@ -115,6 +115,10 @@ def main(args):
     params.fig_mode = args.fig_mode
     params.epochs = args.max_epoch
     params.training_mode = args.training_mode
+    params.source_domain = args.source_domain
+    params.target_domain = args.target_domain
+    params.embed_plot_epoch = args.embed_plot_epoch
+    params.lr = args.lr
 
 
     if args.save_dir is not None:
@@ -124,10 +128,10 @@ def main(args):
 
     # prepare the source data and target data
 
-    src_train_dataloader = utils.get_train_loader('MNIST')
-    src_test_dataloader = utils.get_test_loader('MNIST')
-    tgt_train_dataloader = utils.get_train_loader('MNIST_M')
-    tgt_test_dataloader = utils.get_test_loader('MNIST_M')
+    src_train_dataloader = utils.get_train_loader(params.source_domain)
+    src_test_dataloader = utils.get_test_loader(params.source_domain)
+    tgt_train_dataloader = utils.get_train_loader(params.target_domain)
+    tgt_test_dataloader = utils.get_test_loader(params.target_domain)
 
     if params.fig_mode is not None:
         print('Images from training on source domain:')
@@ -138,9 +142,10 @@ def main(args):
 
 
     # init models
-    feature_extractor = models.Extractor()
-    class_classifier = models.Class_classifier()
-    domain_classifier = models.Domain_classifier()
+    model_index = params.source_domain + '_' + params.target_domain
+    feature_extractor = params.extractor_dict[model_index]
+    class_classifier = params.class_dict[model_index]
+    domain_classifier = params.domain_dict[model_index]
 
     if params.use_gpu:
         feature_extractor.cuda()
@@ -154,7 +159,7 @@ def main(args):
     # init optimizer
     optimizer = optim.SGD([{'params': feature_extractor.parameters()},
                             {'params': class_classifier.parameters()},
-                            {'params': domain_classifier.parameters()}], lr= 0.01, momentum= 0.9)
+                            {'params': domain_classifier.parameters()}], lr= params.lr, momentum= 0.9)
 
     for epoch in range(params.epochs):
         print('Epoch: {}'.format(epoch))
@@ -173,6 +178,11 @@ def parse_arguments(argv):
     """Command line parse."""
     parser = argparse.ArgumentParser()
 
+
+    parser.add_argument('--source_domain', type= str, default= 'MNIST', help= 'Choose source domain.')
+
+    parser.add_argument('--target_domain', type= str, default= 'MNIST_M', help = 'Choose target domain.')
+
     parser.add_argument('--fig_mode', type=str, default=None, help='Plot experiment figures.')
 
     parser.add_argument('--save_dir', type=str, default=None, help='Path to save plotted images.')
@@ -180,6 +190,10 @@ def parse_arguments(argv):
     parser.add_argument('--training_mode', type=str, default='dann', help='Choose a mode to train the model.')
 
     parser.add_argument('--max_epoch', type=int, default=100, help='The max number of epochs.')
+
+    parser.add_argument('--embed_plot_epoch', type= int, default=100, help= 'Epoch number of plotting embeddings.')
+
+    parser.add_argument('--lr', type= float, default= 0.01, help= 'Learning rate.')
 
     return parser.parse_args()
 

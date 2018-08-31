@@ -1,4 +1,5 @@
 import torchvision
+import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
@@ -23,9 +24,8 @@ def get_train_loader(dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
-        print(os.path.abspath(params.source_path))
 
-        data = datasets.MNIST(root= params.source_path, train= True, transform= transform,
+        data = datasets.MNIST(root= params.mnist_path, train= True, transform= transform,
                               download= True)
 
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
@@ -38,9 +38,23 @@ def get_train_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
 
-        data = datasets.ImageFolder(root=params.target_path + '/train', transform= transform)
+        data = datasets.ImageFolder(root=params.mnistm_path + '/train', transform= transform)
 
         dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+
+    elif dataset == 'SVHN':
+        transform = transforms.Compose([
+            transforms.RandomCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
+        data1 = datasets.SVHN(root=params.svhn_path, split='train', transform=transform, download=True)
+        data2 = datasets.SVHN(root= params.svhn_path, split= 'extra', transform = transform, download= True)
+
+        data = torch.utils.data.ConcatDataset((data1, data2))
+
+        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
 
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
@@ -60,7 +74,7 @@ def get_test_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
 
-        data = datasets.MNIST(root= params.source_path, train= False, transform= transform,
+        data = datasets.MNIST(root= params.mnist_path, train= False, transform= transform,
                               download= True)
 
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
@@ -72,7 +86,17 @@ def get_test_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
 
-        data = datasets.ImageFolder(root=params.target_path + '/test', transform= transform)
+        data = datasets.ImageFolder(root=params.mnistm_path + '/test', transform= transform)
+
+        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+    elif dataset == 'SVHN':
+        transform = transforms.Compose([
+            transforms.CenterCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean= params.dataset_mean, std = params.dataset_std)
+        ])
+
+        data = datasets.SVHN(root= params.svhn_path, split= 'test', transform = transform, download= True)
 
         dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
     else:
