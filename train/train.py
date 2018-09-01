@@ -38,7 +38,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
         if training_mode == 'dann':
             # setup hyperparameters
             p = float(batch_idx + start_steps) / total_steps
-            constant = 2. / (1. + np.exp(-10 * p)) - 1
+            constant = 2. / (1. + np.exp(-params.gamma * p)) - 1
 
             # prepare the data
             input1, label1 = sdata
@@ -80,7 +80,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             src_loss = domain_criterion(src_preds, source_labels)
             domain_loss = tgt_loss + src_loss
 
-            loss = class_loss + domain_loss
+            loss = class_loss + params.theta * domain_loss
             loss.backward()
             optimizer.step()
 
