@@ -6,6 +6,10 @@
 > source domain distribution and target domain distribution. For the tensorflow  
 > version, you can see [tf-dann][2].
 
+### requirements
+> python3.6.2  
+> `pip install -r requirements.txt`
+
 ### Data
 > In this work, MNIST and MNIST_M datasets are used in experiments. MNIST dataset  
 > can be downloaded with `torchvision.datasets`. MINIST_M dataset can be downloa-  
@@ -24,7 +28,12 @@ python preprocess.py
 |Method     | Target Acc(paper) | Target Acc(this work)|
 |:----------:|:-----------------:|:---------------------:|
 |Source Only| 0.5225            | 0.5189|
-|DANN       | 0.7666            | 0.7204|``````
+|DANN       | 0.7666            | 0.7600|``````
+
+> Experiment on SVHN->MNIST is added in this project, but some bugs are not fixed.  
+> The accuracies of source and target domains are not good at the same time.
+
+> Experiment on SynDig->SVHN is added.
 
 
 

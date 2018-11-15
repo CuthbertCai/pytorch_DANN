@@ -1,14 +1,18 @@
 import torchvision
+import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 from train import params
 from sklearn.manifold import TSNE
 
+
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+
 import numpy as np
 import os, time
-
+from data import SynDig
 
 
 def get_train_loader(dataset):
@@ -21,11 +25,13 @@ def get_train_loader(dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
-        print(os.path.abspath(params.source_path))
-        data = datasets.MNIST(root= params.source_path, train= True, transform= transform,
+
+        data = datasets.MNIST(root= params.mnist_path, train= True, transform= transform,
                               download= True)
 
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
+
+
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             transforms.RandomCrop((28)),
@@ -33,9 +39,34 @@ def get_train_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
 
-        data = datasets.ImageFolder(root=params.target_path + '/train', transform= transform)
+        data = datasets.ImageFolder(root=params.mnistm_path + '/train', transform= transform)
 
         dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+
+    elif dataset == 'SVHN':
+        transform = transforms.Compose([
+            transforms.RandomCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
+        data1 = datasets.SVHN(root=params.svhn_path, split='train', transform=transform, download=True)
+        data2 = datasets.SVHN(root= params.svhn_path, split= 'extra', transform = transform, download= True)
+
+        data = torch.utils.data.ConcatDataset((data1, data2))
+
+        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+    elif dataset == 'SynDig':
+        transform = transforms.Compose([
+            transforms.RandomCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
+        ])
+
+        data = SynDig.SynDig(root= params.syndig_path, split= 'train', transform= transform, download= False)
+
+        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+
 
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
@@ -55,7 +86,7 @@ def get_test_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
 
-        data = datasets.MNIST(root= params.source_path, train= False, transform= transform,
+        data = datasets.MNIST(root= params.mnist_path, train= False, transform= transform,
                               download= True)
 
         dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
@@ -67,9 +98,29 @@ def get_test_loader(dataset):
             transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
         ])
 
-        data = datasets.ImageFolder(root=params.target_path + '/test', transform= transform)
+        data = datasets.ImageFolder(root=params.mnistm_path + '/test', transform= transform)
 
         dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+    elif dataset == 'SVHN':
+        transform = transforms.Compose([
+            transforms.CenterCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean= params.dataset_mean, std = params.dataset_std)
+        ])
+
+        data = datasets.SVHN(root= params.svhn_path, split= 'test', transform = transform, download= True)
+
+        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+    elif dataset == 'SynDig':
+        transform = transforms.Compose([
+            transforms.CenterCrop((28)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
+        data = SynDig.SynDig(root= params.syndig_path, split= 'test', transform= transform, download= False)
+
+        dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
@@ -91,15 +142,17 @@ def optimizer_scheduler(optimizer, p):
 
 
 
-def displayImages(dataloader, length=8, folder=None, imgName=None):
+def displayImages(dataloader, length=8, imgName=None):
     """
     Randomly sample some images and display
     :param dataloader: maybe trainloader or testloader
     :param length: number of images to be displayed
-    :param folder: the path to save the image
     :param imgName: the name of saving image
     :return:
     """
+    if params.fig_mode is None:
+        return
+
     # randomly sample some images.
     dataiter = iter(dataloader)
     images, labels = dataiter.next()
@@ -112,22 +165,25 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
     images = np.transpose(images, (1, 2, 0))
 
 
-    if folder is None:
-        # Directly display if no folder provided.
+    if params.fig_mode == 'display':
+
         plt.imshow(images)
         plt.show()
 
-    else:
+    if params.fig_mode == 'save':
         # Check if folder exist, otherwise need to create it.
-        folder = os.path.abspath(folder)
+        folder = os.path.abspath(params.save_dir)
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
         if imgName is None:
             imgName = 'displayImages' + str(int(time.time()))
-        imgName = os.path.join(folder, imgName + '.jpg')
 
+
+        # Check extension in case.
+        if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
+            imgName = os.path.join(folder, imgName + '.jpg')
 
         plt.imsave(imgName, images)
         plt.close()
@@ -137,7 +193,8 @@ def displayImages(dataloader, length=8, folder=None, imgName=None):
 
 
 
-def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
+
+def plot_embedding(X, y, d, title=None, imgName=None):
     """
     Plot an embedding X with the class label y colored by the domain d.
 
@@ -145,11 +202,14 @@ def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
     :param y: label
     :param d: domain
     :param title: title on the figure
-    :param folder: the path to save the image
     :param imgName: the name of saving image
+
     :return:
     """
+    if params.fig_mode is None:
+        return
 
+    # normalization
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
@@ -164,23 +224,30 @@ def plot_embedding(X, y, d, title=None, folder=None, imgName=None):
                  fontdict={'weight': 'bold', 'size': 9})
 
     plt.xticks([]), plt.yticks([])
+
+    # If title is not given, we assign training_mode to the title.
     if title is not None:
         plt.title(title)
+    else:
+        plt.title(params.training_mode)
 
-    if folder is None:
+    if params.fig_mode == 'display':
         # Directly display if no folder provided.
         plt.show()
 
-    else:
+    if params.fig_mode == 'save':
         # Check if folder exist, otherwise need to create it.
-        folder = os.path.abspath(folder)
+        folder = os.path.abspath(params.save_dir)
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
         if imgName is None:
             imgName = 'plot_embedding' + str(int(time.time()))
-        imgName = os.path.join(folder, imgName + '.jpg')
+
+        # Check extension in case.
+        if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
+            imgName = os.path.join(folder, imgName + '.jpg')
 
         plt.savefig(imgName)
         plt.close()
