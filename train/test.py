@@ -22,16 +22,16 @@ def test(feature_extractor, class_classifier, domain_classifier, source_dataload
     feature_extractor.eval()
     class_classifier.eval()
     domain_classifier.eval()
-    source_correct = 0
-    target_correct = 0
-    domain_correct = 0
-    tgt_correct = 0
-    src_correct = 0
+    source_correct = 0.0
+    target_correct = 0.0
+    domain_correct = 0.0
+    tgt_correct = 0.0
+    src_correct = 0.0
 
     for batch_idx, sdata in enumerate(source_dataloader):
         # setup hyperparameters
         p = float(batch_idx) / len(source_dataloader)
-        constant = 2. / (1. + np.exp(-10 * p)) - 1
+        constant = 2. / (1. + np.exp(-10 * p)) - 1.
 
         input1, label1 = sdata
         if params.use_gpu:
@@ -75,8 +75,8 @@ def test(feature_extractor, class_classifier, domain_classifier, source_dataload
     print('\nSource Accuracy: {}/{} ({:.4f}%)\nTarget Accuracy: {}/{} ({:.4f}%)\n'
           'Domain Accuracy: {}/{} ({:.4f}%)\n'.
         format(
-        source_correct, len(source_dataloader.dataset), 100. * source_correct / len(source_dataloader.dataset),
-        target_correct, len(target_dataloader.dataset), 100. * target_correct / len(target_dataloader.dataset),
+        source_correct, len(source_dataloader.dataset), 100. * float(source_correct) / len(source_dataloader.dataset),
+        target_correct, len(target_dataloader.dataset), 100. * float(target_correct) / len(target_dataloader.dataset),
         domain_correct, len(source_dataloader.dataset) + len(target_dataloader.dataset),
-        100. * domain_correct / (len(source_dataloader.dataset) + len(target_dataloader.dataset))
+        100. * float(domain_correct) / (len(source_dataloader.dataset) + len(target_dataloader.dataset))
     ))

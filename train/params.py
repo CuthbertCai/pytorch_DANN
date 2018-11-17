@@ -9,7 +9,7 @@ svhn_path = data_root + '/SVHN'
 syndig_path = data_root + '/SynthDigits'
 batch_size = 512
 epochs = 100
-gamma = -10
+gamma = 10
 theta = 1
 
 extractor_dict = {'MNIST_MNIST_M': models.Extractor(),
