@@ -165,7 +165,6 @@ def displayImages(dataloader, length=8, imgName=None):
     images = np.transpose(images, (1, 2, 0))
 
 
-
     if params.fig_mode == 'display':
 
         plt.imshow(images)
@@ -181,16 +180,17 @@ def displayImages(dataloader, length=8, imgName=None):
         if imgName is None:
             imgName = 'displayImages' + str(int(time.time()))
 
+
         # Check extension in case.
         if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
             imgName = os.path.join(folder, imgName + '.jpg')
-
 
         plt.imsave(imgName, images)
         plt.close()
 
     # print labels
     print(' '.join('%5s' % labels[j].item() for j in range(length)))
+
 
 
 
@@ -209,7 +209,7 @@ def plot_embedding(X, y, d, title=None, imgName=None):
     if params.fig_mode is None:
         return
 
-
+    # normalization
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
@@ -235,7 +235,6 @@ def plot_embedding(X, y, d, title=None, imgName=None):
         # Directly display if no folder provided.
         plt.show()
 
-
     if params.fig_mode == 'save':
         # Check if folder exist, otherwise need to create it.
         folder = os.path.abspath(params.save_dir)
@@ -250,5 +249,6 @@ def plot_embedding(X, y, d, title=None, imgName=None):
         if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
             imgName = os.path.join(folder, imgName + '.jpg')
 
+        print('Saving ' + imgName + ' ...')
         plt.savefig(imgName)
         plt.close()

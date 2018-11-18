@@ -23,8 +23,8 @@ import time
 
 
 
-def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader,
-                         num_of_samples=None, imgName=None):
+def visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
+                         tgt_test_dataloader, num_of_samples=None, imgName=None):
     """
     Evaluate the performance of dann and source only by visualization.
 
@@ -111,13 +111,15 @@ def visualizePerformance(feature_extractor, class_classifier, domain_classifier,
 
 
 def main(args):
+
     # Set global parameters.
     params.fig_mode = args.fig_mode
     params.epochs = args.max_epoch
     params.training_mode = args.training_mode
     params.source_domain = args.source_domain
     params.target_domain = args.target_domain
-    params.embed_plot_epoch = args.embed_plot_epoch
+    if params.embed_plot_epoch is None:
+        params.embed_plot_epoch = args.embed_plot_epoch
     params.lr = args.lr
 
 
@@ -135,11 +137,11 @@ def main(args):
 
     if params.fig_mode is not None:
         print('Images from training on source domain:')
+
         utils.displayImages(src_train_dataloader, imgName='source')
 
         print('Images from test on target domain:')
         utils.displayImages(tgt_test_dataloader, imgName='target')
-
 
     # init models
     model_index = params.source_domain + '_' + params.target_domain
@@ -167,8 +169,9 @@ def main(args):
                     src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
         test.test(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader)
 
+
         # Plot embeddings periodically.
-        if epoch % params.embed_plot_epoch == 0 and args.fig_mode:
+        if epoch % params.embed_plot_epoch == 0 and params.fig_mode is not None:
             visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
                                  tgt_test_dataloader, imgName='embedding_' + str(epoch))
 
@@ -177,7 +180,6 @@ def main(args):
 def parse_arguments(argv):
     """Command line parse."""
     parser = argparse.ArgumentParser()
-
 
     parser.add_argument('--source_domain', type= str, default= 'MNIST', help= 'Choose source domain.')
 
@@ -196,6 +198,7 @@ def parse_arguments(argv):
     parser.add_argument('--lr', type= float, default= 0.01, help= 'Learning rate.')
 
     return parser.parse_args()
+
 
 
 if __name__ == '__main__':
