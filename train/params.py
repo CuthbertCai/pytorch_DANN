@@ -11,7 +11,7 @@ dataset_std = (0.5, 0.5, 0.5)
 
 batch_size = 512
 epochs = 1000
-gamma = -10
+gamma = 10
 theta = 1
 
 # path params
@@ -21,6 +21,7 @@ mnist_path = data_root + '/MNIST'
 mnistm_path = data_root + '/MNIST_M'
 svhn_path = data_root + '/SVHN'
 syndig_path = data_root + '/SynthDigits'
+
 save_dir = './experiment'
 
 
