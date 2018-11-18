@@ -249,5 +249,6 @@ def plot_embedding(X, y, d, title=None, imgName=None):
         if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
             imgName = os.path.join(folder, imgName + '.jpg')
 
+        print('Saving ' + imgName + ' ...')
         plt.savefig(imgName)
         plt.close()

@@ -7,6 +7,7 @@ import urllib
 import os.path
 import numpy as np
 
+
 class SynDig(data.Dataset):
 
     url = 'https://doc-08-a8-docs.googleusercontent.com/docs/securesc/4gco78h4r5v7n2eq50hcumr89oar2vtn/' \
@@ -39,6 +40,7 @@ class SynDig(data.Dataset):
         if not self._check_exists():
             raise RuntimeError('Dataset not found.' +
                                'You can use download=True to download it.')
+
 
         import scipy.io as sio
 

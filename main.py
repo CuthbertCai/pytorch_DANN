@@ -118,7 +118,8 @@ def main(args):
     params.training_mode = args.training_mode
     params.source_domain = args.source_domain
     params.target_domain = args.target_domain
-    params.embed_plot_epoch = args.embed_plot_epoch
+    if params.embed_plot_epoch is None:
+        params.embed_plot_epoch = args.embed_plot_epoch
     params.lr = args.lr
 
 
@@ -170,7 +171,7 @@ def main(args):
 
 
         # Plot embeddings periodically.
-        if epoch % params.embed_plot_epoch == 0 and args.fig_mode:
+        if epoch % params.embed_plot_epoch == 0 and params.fig_mode is not None:
             visualizePerformance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
                                  tgt_test_dataloader, imgName='embedding_' + str(epoch))
 
@@ -197,6 +198,7 @@ def parse_arguments(argv):
     parser.add_argument('--lr', type= float, default= 0.01, help= 'Learning rate.')
 
     return parser.parse_args()
+
 
 
 if __name__ == '__main__':
