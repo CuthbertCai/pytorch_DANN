@@ -106,6 +106,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
 
             # setup optimizer
             optimizer = optim.SGD(list(feature_extractor.parameters())+list(class_classifier.parameters()), lr=0.01, momentum=0.9)
+            optimizer.zero_grad()
 
             # compute the output of source domain and target domain
             src_feature = feature_extractor(input1)
@@ -137,6 +138,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             # setup optimizer
             optimizer = optim.SGD(list(feature_extractor.parameters()) + list(class_classifier.parameters()), lr=0.01,
                                   momentum=0.9)
+            optimizer.zero_grad()
 
             # compute the output of source domain and target domain
             tgt_feature = feature_extractor(input2)

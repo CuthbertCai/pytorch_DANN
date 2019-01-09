@@ -89,7 +89,7 @@ def get_test_loader(dataset):
         data = datasets.MNIST(root= params.mnist_path, train= False, transform= transform,
                               download= True)
 
-        dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
+        dataloader = DataLoader(dataset= data, batch_size= 1, shuffle= False)
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             # transforms.RandomCrop((28)),
@@ -100,7 +100,7 @@ def get_test_loader(dataset):
 
         data = datasets.ImageFolder(root=params.mnistm_path + '/test', transform= transform)
 
-        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+        dataloader = DataLoader(dataset = data, batch_size= 1, shuffle= False)
     elif dataset == 'SVHN':
         transform = transforms.Compose([
             transforms.CenterCrop((28)),
@@ -110,7 +110,7 @@ def get_test_loader(dataset):
 
         data = datasets.SVHN(root= params.svhn_path, split= 'test', transform = transform, download= True)
 
-        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
+        dataloader = DataLoader(dataset = data, batch_size= 1, shuffle= False)
     elif dataset == 'SynDig':
         transform = transforms.Compose([
             transforms.CenterCrop((28)),
@@ -120,7 +120,7 @@ def get_test_loader(dataset):
 
         data = SynDig.SynDig(root= params.syndig_path, split= 'test', transform= transform, download= False)
 
-        dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
+        dataloader = DataLoader(dataset= data, batch_size= 1, shuffle= False)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
